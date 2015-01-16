@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+  <!-- 调试时,将hbase的hbase.coprocessor.abortonerror设置成true,待确定Coprocessor运行正常后在改为false.
+  此步骤非必要,但是如果Coprocessor有问题会导致所有Region Server无法启动!
+  -->
+  <property>
+    <name>hbase.coprocessor.abortonerror</name>
+    <value>true</value>
+  </property>
+  <!-- Solr Coprocessor -->
+  <property>
+    <name>hbase.coprocessor.region.classes</name>
+    <value>wjw.hbase.solr.SolrRegionObserver</value>
+  </property>
+
+  <!-- 本地保存Queue的目录名,没有时使用:System.getProperty("java.io.tmpdir")得来的值  -->
+  <property>
+    <name>hbase.solr.queueDir</name>
+    <value>/tmp</value>
+  </property>  
+  <!-- Solr的URL,多个以逗号分隔 -->
+  <property>
+    <name>hbase.solr.solrUrl</name>
+    <value>http://localhost:8983/solr/</value>
+  </property>  
+  <!-- core名字  -->
+  <property>
+    <name>hbase.solr.coreName</name>
+    <value>hbase</value>
+  </property>  
+  <!-- 连接超时(秒) -->
+  <property>
+    <name>hbase.solr.connectTimeout</name>
+    <value>60</value>
+  </property>  
+  <!-- 读超时(秒) -->
+  <property>
+    <name>hbase.solr.readTimeout</name>
+    <value>60</value>
+  </property>  
+</configuration>
