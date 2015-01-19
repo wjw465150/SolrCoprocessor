@@ -391,21 +391,21 @@ public class SolrRegionObserver extends BaseRegionObserver {
 				cFamily = new String(CellUtil.cloneFamily(cell));
 				cQualifier = new String(CellUtil.cloneQualifier(cell));
 				cValue = new String(CellUtil.cloneValue(cell), SolrTools.UTF_8);
-				if (cQualifier.endsWith("_hs") || cQualifier.endsWith("_s")) { //string
+				if (cQualifier.endsWith("_s")) { //string
 					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", cValue));
-				} else if (cQualifier.endsWith("_ht") || cQualifier.endsWith("_t")) { //text_general
+				} else if (cQualifier.endsWith("_t")) { //text_general
 					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", cValue));
-				} else if (cQualifier.endsWith("_hdt") || cQualifier.endsWith("_dt")) { //date
+				} else if (cQualifier.endsWith("_dt")) { //date
 					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", cValue));
-				} else if (cQualifier.endsWith("_hi") || cQualifier.endsWith("_i")) { //int
+				} else if (cQualifier.endsWith("_i")) { //int
 					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putNumber("set", Integer.valueOf(cValue)));
-				} else if (cQualifier.endsWith("_hl") || cQualifier.endsWith("_l")) { //long
+				} else if (cQualifier.endsWith("_l")) { //long
 					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putNumber("set", Long.valueOf(cValue)));
-				} else if (cQualifier.endsWith("_hf") || cQualifier.endsWith("_f")) { //float
+				} else if (cQualifier.endsWith("_f")) { //float
 					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putNumber("set", Float.valueOf(cValue)));
-				} else if (cQualifier.endsWith("_hd") || cQualifier.endsWith("_d")) { //double
+				} else if (cQualifier.endsWith("_d")) { //double
 					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putNumber("set", Double.valueOf(cValue)));
-				} else if (cQualifier.endsWith("_hb") || cQualifier.endsWith("_b")) { //boolean
+				} else if (cQualifier.endsWith("_b")) { //boolean
 					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putBoolean("set", Boolean.valueOf(cValue)));
 				} else { //不是需要的类型,跳出!
 					continue;

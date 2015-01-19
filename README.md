@@ -26,16 +26,16 @@
 
 ## [X] 部署:
 
-### 在Solr的schema.xml文件里添加如下:
+### 在Solr的schema.xml文件里必须有如下动态字段:
 ```xml
-   <dynamicField name="*_hi"  type="int"    indexed="true"  stored="false"/>
-   <dynamicField name="*_hl"  type="long"   indexed="true"  stored="false"/>
-   <dynamicField name="*_hf"  type="float"  indexed="true"  stored="false"/>
-   <dynamicField name="*_hd"  type="double" indexed="true"  stored="false"/>
-   <dynamicField name="*_hb"  type="boolean" indexed="true" stored="false"/>
-   <dynamicField name="*_hs"  type="string"  indexed="true"  stored="false" />
-   <dynamicField name="*_ht"  type="text_general"    indexed="true"  stored="false"/>
-   <dynamicField name="*_hdt"  type="date"    indexed="true"  stored="false"/>
+   <dynamicField name="*_i"  type="int"    indexed="true"  stored="true"/>
+   <dynamicField name="*_l"  type="long"   indexed="true"  stored="true"/>
+   <dynamicField name="*_f"  type="float"  indexed="true"  stored="true"/>
+   <dynamicField name="*_d"  type="double" indexed="true"  stored="true"/>
+   <dynamicField name="*_b"  type="boolean" indexed="true" stored="true"/>
+   <dynamicField name="*_s"  type="string"  indexed="true"  stored="true" />
+   <dynamicField name="*_t"  type="text_general"    indexed="true"  stored="true"/>
+   <dynamicField name="*_dt"  type="date"    indexed="true"  stored="true"/>
 ```
 说明:
 >  
@@ -46,7 +46,7 @@ solr里的每一条Dcoument对应HBase表里的一条记录
 `r_s`格式是:`${RowKey}`  
 `u_dt`格式是:`${d当前更新时的日期和时间}`  
 其他字段格式是:`${Family}#${Qualifier}`  
-如果HBase表里的字段只需要indexed(索引),而不需要stored(存储),那么`Qualifier`设计为已`_h(i|l|f|d|b|s|t|dt)`结尾!  
+如果HBase表里的字段需要在solr里索引,那么`Qualifier`设计为已`_(i|l|f|d|b|s|t|dt)`结尾的solr动态字段!  
 
 ### 停止HBase:
 在master hbase server上执行:
@@ -111,9 +111,11 @@ ${HBASE_HOME}/bin/start-hbase.sh
 /opt/hbase/bin/hbase shell
 >status
 >create 'demotable','col'
+>describe  'demotable'
 >list 'demotable'
->put 'demotable','myrow-1','col:q1_s','value-1'
->put 'demotable','myrow-1','col:q2_t','value-1-测试'
->put 'demotable','myrow-2','col:q2_t','value-2-测试'
+>put 'demotable','myrow-1','col:q1','value-1'
+>put 'demotable','myrow-1','col:q2_s','value-2-测试'
+>put 'demotable','myrow-1','col:name_t','张三 李四 王五'
+>put 'demotable','myrow-1','col:q3_s','value-3-测试'
 >scan 'demotable'
 ```
