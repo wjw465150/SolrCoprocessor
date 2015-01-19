@@ -50,28 +50,30 @@ public class SolrRegionObserver extends BaseRegionObserver {
 		JsonObject.setDateFormat(new SimpleDateFormat(SolrTools.LOGDateFormatPattern));
 	}
 
-	private String queueDir; //本地BigQueue的目录
+	private static volatile int _startCount = 0; //启动计数
 
-	private String solrUrl; //Solr的添加索引的URL,多个以逗号分隔
+	private static String queueDir; //本地BigQueue的目录
 
-	private String coreName; //core名字
+	private static String solrUrl; //Solr的添加索引的URL,多个以逗号分隔
 
-	private int connectTimeout = 60 * 1000; //连接超时(毫秒)
+	private static String coreName; //core名字
 
-	private int readTimeout = 60 * 1000; //读超时(毫秒)
+	private static int connectTimeout = 60 * 1000; //连接超时(毫秒)
 
-	private JsonArray _stateArray;
-	private java.util.List<String> _urlUpdates;
+	private static int readTimeout = 60 * 1000; //读超时(毫秒)
 
-	private Lock _lockPost = new ReentrantLock();
-	private int _indexPost = -1;
+	private static JsonArray _stateArray;
+	private static java.util.List<String> _urlUpdates;
 
-	private IBigQueue _bqUpdate;
-	private IBigQueue _bqDelete;
+	private static Lock _lockPost = new ReentrantLock();
+	private static int _indexPost = -1;
 
-	private ScheduledExecutorService _scheduleSync = Executors.newSingleThreadScheduledExecutor(); //刷新Solr集群状态的Scheduled
-	private ScheduledExecutorService _scheduleSolrUpdate = Executors.newSingleThreadScheduledExecutor(); //向Solr集群Update数据的Scheduled
-	private ScheduledExecutorService _scheduleSolrDelete = Executors.newSingleThreadScheduledExecutor(); //向Solr集群Delete数据的Scheduled
+	private static IBigQueue _bqUpdate;
+	private static IBigQueue _bqDelete;
+
+	private static ScheduledExecutorService _scheduleSync = Executors.newSingleThreadScheduledExecutor(); //刷新Solr集群状态的Scheduled
+	private static ScheduledExecutorService _scheduleSolrUpdate = Executors.newSingleThreadScheduledExecutor(); //向Solr集群Update数据的Scheduled
+	private static ScheduledExecutorService _scheduleSolrDelete = Executors.newSingleThreadScheduledExecutor(); //向Solr集群Delete数据的Scheduled
 
 	private String sanitizeFilename(String unsanitized) {
 		return unsanitized.replaceAll("[\\?\\\\/:|<>\\*]", " ") // filter out ? \ / : | < > *
@@ -183,6 +185,17 @@ public class SolrRegionObserver extends BaseRegionObserver {
 
 	@Override
 	public void start(CoprocessorEnvironment e) throws IOException {
+		synchronized (SolrRegionObserver.class) {
+			_startCount++;
+			if (_startCount > 1) { //已经初始化完毕
+				return;
+			}
+		}
+
+		init(e);
+	}
+
+	public void init(CoprocessorEnvironment e) throws IOException {
 		org.apache.hadoop.conf.Configuration conf = e.getConfiguration();
 
 		queueDir = conf.get(HBASE_SOLR_QUEUEDIR);
@@ -325,6 +338,17 @@ public class SolrRegionObserver extends BaseRegionObserver {
 
 	@Override
 	public void stop(CoprocessorEnvironment e) throws IOException {
+		synchronized (SolrRegionObserver.class) {
+			_startCount--;
+			if (_startCount > 0) { //还有引用
+				return;
+			}
+		}
+
+		this.destroy(e);
+	}
+
+	public void destroy(CoprocessorEnvironment e) throws IOException {
 		_scheduleSync.shutdown();
 		_scheduleSolrUpdate.shutdown();
 		_scheduleSolrDelete.shutdown();
@@ -357,16 +381,11 @@ public class SolrRegionObserver extends BaseRegionObserver {
 		}
 		String rowKey = Bytes.toString(put.getRow());
 
-		JsonObject jsonPut = new JsonObject();
-		jsonPut.putString(F_ID, tableName + F_SEPARATOR + rowKey);
-		jsonPut.putObject(F_TABLENAME, (new JsonObject()).putString("set", tableName));
-		jsonPut.putObject(F_ROWKEY, (new JsonObject()).putString("set", rowKey));
-		jsonPut.putObject(F_UPDATETIME, (new JsonObject()).putString("set", SolrTools.solrDateFormat.format(new java.util.Date())));
-
 		String cFamily = null;
 		String cQualifier = null;
 		String cValue = null;
 		NavigableMap<byte[], List<Cell>> map = put.getFamilyCellMap();
+		JsonObject jsonPut = new JsonObject();
 		for (List<Cell> cells : map.values()) {
 			for (Cell cell : cells) {
 				cFamily = new String(CellUtil.cloneFamily(cell));
@@ -393,6 +412,14 @@ public class SolrRegionObserver extends BaseRegionObserver {
 				}
 			}
 		}
+		if (jsonPut.size() == 0) { //说明没有solr查询字段
+			return;
+		}
+
+		jsonPut.putString(F_ID, tableName + F_SEPARATOR + rowKey);
+		jsonPut.putObject(F_TABLENAME, (new JsonObject()).putString("set", tableName));
+		jsonPut.putObject(F_ROWKEY, (new JsonObject()).putString("set", rowKey));
+		jsonPut.putObject(F_UPDATETIME, (new JsonObject()).putString("set", SolrTools.solrDateFormat.format(new java.util.Date())));
 
 		log.debug("postPut!!! " + jsonPut.encode());
 		_bqUpdate.enqueue(jsonPut.encode().getBytes(SolrTools.UTF_8));
