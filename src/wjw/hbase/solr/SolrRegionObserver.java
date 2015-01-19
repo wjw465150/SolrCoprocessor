@@ -232,6 +232,16 @@ public class SolrRegionObserver extends BaseRegionObserver {
 
 		//≥ı ºªØCloud
 		_stateArray = SolrTools.getClusterState(solrUrl, coreName, connectTimeout, readTimeout);
+		while (_stateArray == null) {
+			_stateArray = SolrTools.getClusterState(solrUrl, coreName, connectTimeout, readTimeout);
+			log.warn("can not connect Solr Cloud:" + "coreName:" + coreName + "URLS:" + solrUrl);
+			try {
+				java.util.concurrent.TimeUnit.SECONDS.sleep(3);
+			} catch (InterruptedException ite) {
+				log.error(ite);
+				break;
+			}
+		}
 		if (_stateArray == null) {
 			throw new RuntimeException("can not connect Solr Cloud:" + "coreName:" + coreName + "URLS:" + solrUrl);
 		} else {
