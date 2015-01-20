@@ -24,6 +24,9 @@
 ## [X] 实现代码:
 参见[SolrCoprocessor](https://github.com/wjw465150/SolrCoprocessor)
 
+## [X] 当前限制:
++ 不能单独删除指定的`列簇(${Family})`,必须是删除`行(Row)`,或者删除指定的`列(${Family}#${Qualifier})`!  
+
 ## [X] 部署:
 
 ### 在Solr的schema.xml文件里必须有如下动态字段:

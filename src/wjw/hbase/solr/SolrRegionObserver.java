@@ -395,44 +395,44 @@ public class SolrRegionObserver extends BaseRegionObserver {
 		String cQualifier = null;
 		String cValue = null;
 		NavigableMap<byte[], List<Cell>> map = put.getFamilyCellMap();
-		JsonObject jsonPut = new JsonObject();
+		JsonObject jsonSet = new JsonObject();
 		for (List<Cell> cells : map.values()) {
 			for (Cell cell : cells) {
 				cFamily = new String(CellUtil.cloneFamily(cell));
 				cQualifier = new String(CellUtil.cloneQualifier(cell));
 				cValue = new String(CellUtil.cloneValue(cell), SolrTools.UTF_8);
 				if (cQualifier.endsWith("_s")) { //string
-					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", cValue));
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", cValue));
 				} else if (cQualifier.endsWith("_t")) { //text_general
-					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", cValue));
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", cValue));
 				} else if (cQualifier.endsWith("_dt")) { //date
-					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", cValue));
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", cValue));
 				} else if (cQualifier.endsWith("_i")) { //int
-					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putNumber("set", Integer.valueOf(cValue)));
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putNumber("set", Integer.valueOf(cValue)));
 				} else if (cQualifier.endsWith("_l")) { //long
-					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putNumber("set", Long.valueOf(cValue)));
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putNumber("set", Long.valueOf(cValue)));
 				} else if (cQualifier.endsWith("_f")) { //float
-					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putNumber("set", Float.valueOf(cValue)));
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putNumber("set", Float.valueOf(cValue)));
 				} else if (cQualifier.endsWith("_d")) { //double
-					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putNumber("set", Double.valueOf(cValue)));
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putNumber("set", Double.valueOf(cValue)));
 				} else if (cQualifier.endsWith("_b")) { //boolean
-					jsonPut.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putBoolean("set", Boolean.valueOf(cValue)));
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putBoolean("set", Boolean.valueOf(cValue)));
 				} else { //不是需要的类型,跳出!
 					continue;
 				}
 			}
 		}
-		if (jsonPut.size() == 0) { //说明没有solr查询字段
+		if (jsonSet.size() == 0) { //说明没有solr查询字段
 			return;
 		}
 
-		jsonPut.putString(F_ID, tableName + F_SEPARATOR + rowKey);
-		jsonPut.putObject(F_TABLENAME, (new JsonObject()).putString("set", tableName));
-		jsonPut.putObject(F_ROWKEY, (new JsonObject()).putString("set", rowKey));
-		jsonPut.putObject(F_UPDATETIME, (new JsonObject()).putString("set", SolrTools.solrDateFormat.format(new java.util.Date())));
+		jsonSet.putString(F_ID, tableName + F_SEPARATOR + rowKey);
+		jsonSet.putObject(F_TABLENAME, (new JsonObject()).putString("set", tableName));
+		jsonSet.putObject(F_ROWKEY, (new JsonObject()).putString("set", rowKey));
+		jsonSet.putObject(F_UPDATETIME, (new JsonObject()).putString("set", SolrTools.solrDateFormat.format(new java.util.Date())));
 
-		log.debug("postPut!!! " + jsonPut.encode());
-		_bqUpdate.enqueue(jsonPut.encode().getBytes(SolrTools.UTF_8));
+		log.debug("postPut!!! " + jsonSet.encode());
+		_bqUpdate.enqueue(jsonSet.encode().getBytes(SolrTools.UTF_8));
 	}
 
 	@Override
@@ -444,15 +444,52 @@ public class SolrRegionObserver extends BaseRegionObserver {
 		}
 		String rowKey = new String(delete.getRow());
 
-		try {
-			JsonObject jsonDel = new JsonObject();
-			//jsonDel.putObject("delete", (new JsonObject()).putString("query", F_TABLENAME + ":\"" + tableName + "\" AND " + F_ROWKEY + ":\"" + rowKey + "\""));
-			jsonDel.putObject("delete", (new JsonObject()).putString("query", F_ID + ":\"" + tableName + F_SEPARATOR + rowKey + "\""));
+		String cFamily = null;
+		String cQualifier = null;
+		NavigableMap<byte[], List<Cell>> map = delete.getFamilyCellMap();
+		JsonObject jsonSet = new JsonObject();
+		for (List<Cell> cells : map.values()) {
+			for (Cell cell : cells) {
+				cFamily = new String(CellUtil.cloneFamily(cell));
+				cQualifier = new String(CellUtil.cloneQualifier(cell));
+				if (cQualifier.endsWith("_s")) { //string
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", null));
+				} else if (cQualifier.endsWith("_t")) { //text_general
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", null));
+				} else if (cQualifier.endsWith("_dt")) { //date
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", null));
+				} else if (cQualifier.endsWith("_i")) { //int
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", null));
+				} else if (cQualifier.endsWith("_l")) { //long
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", null));
+				} else if (cQualifier.endsWith("_f")) { //float
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", null));
+				} else if (cQualifier.endsWith("_d")) { //double
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", null));
+				} else if (cQualifier.endsWith("_b")) { //boolean
+					jsonSet.putObject(cFamily + F_SEPARATOR + cQualifier, (new JsonObject()).putString("set", null));
+				} else { //不是需要的类型,跳出!
+					continue;
+				}
+			}
+		}
+		if (jsonSet.size() == 0) { //说明没有solr字段
+			if (delete.numFamilies() == e.getEnvironment().getRegion().getTableDesc().getFamilies().size()) { //说明是删除行
+				JsonObject jsonDel = new JsonObject();
+				jsonDel.putObject("delete", (new JsonObject()).putString("query", F_ID + ":\"" + tableName + F_SEPARATOR + rowKey + "\""));
 
-			log.debug("postDelete!!! " + jsonDel.encode());
-			_bqDelete.enqueue(jsonDel.encode().getBytes(SolrTools.UTF_8));
-		} catch (Exception ex) {
-			log.warn(ex);
+				log.debug("postDelete!!! Row:" + jsonDel.encode());
+
+				_bqDelete.enqueue(jsonDel.encode().getBytes(SolrTools.UTF_8));
+			} else { //说明不是删除行
+				return;
+			}
+		} else {
+			jsonSet.putString(F_ID, tableName + F_SEPARATOR + rowKey);
+			jsonSet.putObject(F_UPDATETIME, (new JsonObject()).putString("set", SolrTools.solrDateFormat.format(new java.util.Date())));
+
+			log.debug("postDelete!!! Column:" + jsonSet.encode());
+			_bqUpdate.enqueue(jsonSet.encode().getBytes(SolrTools.UTF_8));
 		}
 	}
 }
