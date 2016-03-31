@@ -100,8 +100,8 @@ ${HBASE_HOME}/bin/stop-hbase.sh
   </property>  
 ```
 
-### 复制`SolrCoprocessor_X.X.X.jar`文件
-把`SolrCoprocessor_X.X.X.jar`复制到所有的`Region Servers`的`$(HBASE_HOME}/lib/`目录下
+### 复制`SolrCoprocessor-X.X.X.jar`文件
+把`SolrCoprocessor-X.X.X.jar`复制到所有的`Region Servers`的`$(HBASE_HOME}/lib/`目录下
 
 ### 启动HBase:
 在master hbase server上执行:

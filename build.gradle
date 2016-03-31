@@ -1,0 +1,101 @@
+apply plugin: 'java'
+
+defaultTasks 'makeOneJar'
+
+version = "1.0.1"
+ext {
+  buildName = "SolrCoprocessor"
+}
+
+//repositories {
+//mavenCentral()
+//flatDir(dirs: file('jarsDerectory'))
+//}
+
+dependencies {
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/commons-codec-1.7.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/commons-configuration-1.6.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/commons-lang-2.6.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/commons-logging-1.1.1.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/guava-12.0.1.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/hadoop-auth-2.2.0.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/hadoop-common-2.2.0.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/hbase-client-0.98.8-hadoop2.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/hbase-common-0.98.8-hadoop2.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/hbase-protocol-0.98.8-hadoop2.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/htrace-core-2.04.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/log4j-1.2.17.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/netty-3.6.6.Final.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/protobuf-java-2.5.0.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/slf4j-api-1.6.4.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/slf4j-log4j12-1.6.4.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/java_jars/zookeeper-3.4.6.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/lib/hbase-server-0.98.8-hadoop2.jar")
+	compile files("lib/BigQueue-0.70.jar")
+	compile files("E:/WJW_DATA/OpenSource/HBase/lib/log4j-1.2.17.jar")
+	compile files("lib/EasyFastJson-2.7.2.jar")
+}
+
+sourceSets {
+	sourceCompatibility = 1.6
+	targetCompatibility = 1.6
+	main {
+		java {
+			srcDirs = ['src']
+		}
+		resources {
+			srcDirs = ['src']
+		}
+	}
+}
+
+jar {  //禁止执行jar Task
+  onlyIf { Task task ->
+    return false
+  }
+}
+
+javadoc {  //禁止执行javadoc Task
+  onlyIf { Task task ->
+    return false
+  }
+}
+
+task makeOneJar(dependsOn: compileJava) << {
+	def basedir="${projectDir}"
+	def oneJarName="${project.buildName}-${project.version}.jar"
+	
+	ant.echo("Ant Build OneJar:${oneJarName} Start...")
+	
+	ant.taskdef(name: "jarjar", classname: "com.tonicsystems.jarjar.JarJarTask",  classpath: "jarjar/jarjar-1.4.jar")
+	ant.jarjar(jarfile: "${basedir}/${oneJarName}") {
+		fileset(dir: "${sourceSets['main'].output.classesDir}") {
+			include(name: "wjw/hbase/solr/**")
+		}
+		zipfileset(src: "lib/BigQueue-0.70.jar")
+		zipfileset(src: "lib/EasyFastJson-2.7.2.jar")
+		rule(pattern: "org.wjw.efjson.**",result: "wjw.hbase.solr.deps.org.wjw.efjson.@1")
+		rule(pattern: "com.leansoft.**",result: "wjw.hbase.solr.deps.com.leansoft.@1")
+	}
+
+	ant.delete(dir: "${basedir}/tmp", quiet: "true")
+	ant.mkdir(dir: "${basedir}/tmp")
+	ant.unzip(src: "${basedir}/${oneJarName}", dest: "${basedir}/tmp")
+	ant.delete(file: "${basedir}/${oneJarName}")
+
+	ant.jar(destfile: "${basedir}/${oneJarName}") {
+		fileset(dir: "${basedir}/tmp") {
+			include(name: "wjw/hbase/solr/**")
+		}
+		delegate.manifest {
+			attribute(name: "Built-By", value: "wjw465150@gmail.com")
+			attribute(name: "Build-Name", value: "${project.buildName}")
+			attribute(name: "Build-Version", value: "${project.version}")
+		}
+	}
+	ant.delete(dir: "${basedir}/tmp", quiet: "true")
+
+	ant.echo("Ant Build OneJar:${oneJarName} End!")
+	
+	clean.execute()
+}

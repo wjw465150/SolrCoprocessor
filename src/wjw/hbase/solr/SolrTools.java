@@ -33,6 +33,7 @@ abstract class SolrTools {
 		System.setProperty("http.keepAlive", "true");
 		System.setProperty("http.maxConnections", "200");
 		System.setProperty("sun.net.http.errorstream.enableBuffering", "true");
+		System.setProperty("sun.net.http.retryPost", "false");  //解决HttpURLConnection当发生SocketTimeoutException异常时的自己重试BUG!
 	}
 	
 	private SolrTools() {
@@ -66,23 +67,23 @@ abstract class SolrTools {
 
 		String clusterstate;
 		JsonArray result = null;
-    int solrVersion = getSolrVersion(urlArray.get(0), connectTimeout, readTimeout);
 		for (int i = 0; i < urlArray.size(); i++) {
-      if (solrVersion > 4) {
-        if (urlArray.get(i).endsWith("/")) {
-          clusterstate = urlArray.get(i) + "admin/zookeeper?wt=json&detail=true&path=%2Fclusterstate.json&view=graph&_=" + System.currentTimeMillis();
-        } else {
-          clusterstate = urlArray.get(i) + "/admin/zookeeper?wt=json&detail=true&path=%2Fclusterstate.json&view=graph&_=" + System.currentTimeMillis();
-        }
-      } else {
-        if (urlArray.get(i).endsWith("/")) {
-          clusterstate = urlArray.get(i) + "zookeeper?wt=json&detail=true&path=%2Fclusterstate.json&_=" + System.currentTimeMillis();
-        } else {
-          clusterstate = urlArray.get(i) + "/zookeeper?wt=json&detail=true&path=%2Fclusterstate.json&_=" + System.currentTimeMillis();
-        }
-      }
-
 			try {
+	      int solrVersion = getSolrVersion(urlArray.get(i), connectTimeout, readTimeout);
+        if (solrVersion > 4) {
+          if (urlArray.get(i).endsWith("/")) {
+            clusterstate = urlArray.get(i) + "admin/zookeeper?wt=json&detail=true&path=%2Fclusterstate.json&view=graph&_=" + System.currentTimeMillis();
+          } else {
+            clusterstate = urlArray.get(i) + "/admin/zookeeper?wt=json&detail=true&path=%2Fclusterstate.json&view=graph&_=" + System.currentTimeMillis();
+          }
+        } else {
+          if (urlArray.get(i).endsWith("/")) {
+            clusterstate = urlArray.get(i) + "zookeeper?wt=json&detail=true&path=%2Fclusterstate.json&_=" + System.currentTimeMillis();
+          } else {
+            clusterstate = urlArray.get(i) + "/zookeeper?wt=json&detail=true&path=%2Fclusterstate.json&_=" + System.currentTimeMillis();
+          }
+        }
+
 				String bodyText = doGetProcess(clusterstate, connectTimeout, readTimeout, null, null);
 
 				JsonObject jsonBody = new JsonObject(bodyText);
@@ -90,10 +91,9 @@ abstract class SolrTools {
 				JsonObject jsonData = new JsonObject(data);
 
 				JsonObject shards = jsonData.getObject(coreName).getObject("shards");
-				int size = shards.size();
 				result = new JsonArray();
-				for (int j = 0; j < size; j++) {
-					JsonObject jsonShared = shards.getObject("shard" + (j + 1));
+				for(String fName : shards.getFieldNames()) {
+					JsonObject jsonShared = shards.getObject(fName);
 					JsonObject replicas = jsonShared.getObject("replicas");
 
 					Map<String, Object> nodes = replicas.toMap();
@@ -105,7 +105,7 @@ abstract class SolrTools {
 
 				break;
 			} catch (Exception e) {
-				ConnectException ee = new ConnectException("URL:[" + clusterstate + "],错误消息:" + e.getMessage());
+				ConnectException ee = new ConnectException("URL:[" + solrServers + "],错误消息:" + e.getMessage());
 				ee.initCause(e);
 				ee.printStackTrace();
 				result = null;

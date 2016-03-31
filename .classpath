@@ -2,26 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/commons-codec-1.7.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/commons-configuration-1.6.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/commons-lang-2.6.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/commons-logging-1.1.1.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/guava-12.0.1.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/hadoop-auth-2.2.0.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/hadoop-common-2.2.0.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/hbase-client-0.98.8-hadoop2.jar" sourcepath="/hbase-client/src"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/hbase-common-0.98.8-hadoop2.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/hbase-protocol-0.98.8-hadoop2.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/htrace-core-2.04.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/log4j-1.2.17.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/netty-3.6.6.Final.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/protobuf-java-2.5.0.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/slf4j-api-1.6.4.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/slf4j-log4j12-1.6.4.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/java_jars/zookeeper-3.4.6.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/lib/hbase-server-0.98.8-hadoop2.jar"/>
-	<classpathentry kind="lib" path="lib/BigQueue-0.70.jar"/>
-	<classpathentry kind="lib" path="E:/WJW_DATA/OpenSource/HBase/lib/log4j-1.2.17.jar"/>
-	<classpathentry kind="lib" path="lib/EasyFastJson-2.2.4.jar"/>
+	<classpathentry exported="true" kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
