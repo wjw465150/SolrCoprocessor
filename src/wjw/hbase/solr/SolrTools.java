@@ -66,14 +66,21 @@ abstract class SolrTools {
 
 		String clusterstate;
 		JsonArray result = null;
+    int solrVersion = getSolrVersion(urlArray.get(0), connectTimeout, readTimeout);
 		for (int i = 0; i < urlArray.size(); i++) {
-			if (urlArray.get(i).endsWith("/")) {
-				clusterstate = urlArray.get(i) + "zookeeper?wt=json&detail=true&path=%2Fclusterstate.json&_="
-				    + System.currentTimeMillis();
-			} else {
-				clusterstate = urlArray.get(i) + "/zookeeper?wt=json&detail=true&path=%2Fclusterstate.json&_="
-				    + System.currentTimeMillis();
-			}
+      if (solrVersion > 4) {
+        if (urlArray.get(i).endsWith("/")) {
+          clusterstate = urlArray.get(i) + "admin/zookeeper?wt=json&detail=true&path=%2Fclusterstate.json&view=graph&_=" + System.currentTimeMillis();
+        } else {
+          clusterstate = urlArray.get(i) + "/admin/zookeeper?wt=json&detail=true&path=%2Fclusterstate.json&view=graph&_=" + System.currentTimeMillis();
+        }
+      } else {
+        if (urlArray.get(i).endsWith("/")) {
+          clusterstate = urlArray.get(i) + "zookeeper?wt=json&detail=true&path=%2Fclusterstate.json&_=" + System.currentTimeMillis();
+        } else {
+          clusterstate = urlArray.get(i) + "/zookeeper?wt=json&detail=true&path=%2Fclusterstate.json&_=" + System.currentTimeMillis();
+        }
+      }
 
 			try {
 				String bodyText = doGetProcess(clusterstate, connectTimeout, readTimeout, null, null);
@@ -108,6 +115,25 @@ abstract class SolrTools {
 		return result;
 	}
 
+  private static int getSolrVersion(String solrURL, int connectTimeout, int readTimeout) {
+    try {
+      String clusterUrl;
+      if (solrURL.endsWith("/")) {
+        clusterUrl = solrURL + "admin/info/system?wt=json&_=" + System.currentTimeMillis();
+      } else {
+        clusterUrl = solrURL + "/admin/info/system?wt=json&_=" + System.currentTimeMillis();
+      }
+      String bodyText = doGetProcess(clusterUrl, connectTimeout, readTimeout, null, null);
+
+      JsonObject jsonBody = new JsonObject(bodyText);
+      String data = jsonBody.getObject("lucene").getString("solr-spec-version");
+
+      return Integer.parseInt(data.substring(0, 1));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+	
 	/**
 	 * 从Solr返回的对象中,返回状态码
 	 * 

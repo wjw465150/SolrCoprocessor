@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project basedir="." default="build" name="SolrCoprocessor">
-  <property name="version" value="1.0.0" />
+  <property name="version" value="1.0.1" />
 
   <path id="SolrCoprocessor.classpath">
     <pathelement location="E:/WJW_DATA/OpenSource/HBase/java_jars/commons-codec-1.7.jar" />
